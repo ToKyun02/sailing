@@ -86,12 +86,15 @@ export class NotesController {
 ```typescript
 @Injectable()
 export class NotesService {
-  constructor(private readonly authorization: AuthorizationService, private readonly context: AuthenticationContext) {}
+  constructor(
+    private readonly authorization: AuthorizationService,
+    private readonly context: AuthenticationContext,
+  ) {}
 
   async edit(id: string, changes: UpdateNote) {
     const user = this.context.requireUser();
     const note = await this.repository.findById(id);
-    if (!note) throw new NotFoundException();                          // 404 first
+    if (!note) throw new NotFoundException(); // 404 first
     await this.authorization.authorize(NotePolicy, 'edit', user, note); // 403 (401 for a guest) when denied
     return this.repository.update(id, changes);
   }
@@ -111,11 +114,11 @@ export class NotesService {
 
 ## 401 or 403
 
-| Caller | Status | From |
-| --- | --- | --- |
-| No or bad credentials on a route that needs a user | 401 (`WWW-Authenticate`) | authentication, before any policy |
-| Guest on an optional route, policy denies `null` | 401 | authorization: signing in might change the answer |
-| Signed-in user, policy denies | 403 | authorization |
+| Caller                                             | Status                   | From                                              |
+| -------------------------------------------------- | ------------------------ | ------------------------------------------------- |
+| No or bad credentials on a route that needs a user | 401 (`WWW-Authenticate`) | authentication, before any policy                 |
+| Guest on an optional route, policy denies `null`   | 401                      | authorization: signing in might change the answer |
+| Signed-in user, policy denies                      | 403                      | authorization                                     |
 
 ## Errors and events
 
@@ -152,12 +155,7 @@ expect(policy.before({ ...alice, role: 'admin' })).toBe(true);
 // Service: the real policy and module, no HTTP. A denial stays an AuthorizationError outside a handler.
 const moduleRef = await Test.createTestingModule({
   imports: [AuthorizationModule.forRoot()],
-  providers: [
-    NotesService,
-    NotePolicy,
-    { provide: QuotaService, useValue: { maxNotesFor: vi.fn().mockResolvedValue(0) } },
-    { provide: AuthenticationContext, useValue: { requireUser: () => alice } },
-  ],
+  providers: [NotesService, NotePolicy, { provide: QuotaService, useValue: { maxNotesFor: vi.fn().mockResolvedValue(0) } }, { provide: AuthenticationContext, useValue: { requireUser: () => alice } }],
 }).compile();
 await expect(moduleRef.get(NotesService).create('x')).rejects.toMatchObject({ reason: 'forbidden', ability: 'createMore' });
 ```

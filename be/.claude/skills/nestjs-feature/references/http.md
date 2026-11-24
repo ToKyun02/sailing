@@ -37,8 +37,7 @@ export class HttpErrorFilter implements ExceptionFilter {
     const res = host.switchToHttp().getResponse<Response>();
     if (exception instanceof HttpException) {
       const body = exception.getResponse();
-      const message =
-        typeof body === 'string' ? body : [(body as { message?: string | string[] }).message ?? exception.message].flat().join('; ');
+      const message = typeof body === 'string' ? body : [(body as { message?: string | string[] }).message ?? exception.message].flat().join('; ');
       res.status(exception.getStatus()).json({ code: exception.getStatus(), detail: message }); // the contract's shape
       return;
     }

@@ -29,9 +29,13 @@ export const notes = sqliteTable(
   'notes',
   {
     id: integer().primaryKey({ autoIncrement: true }),
-    userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     title: text().notNull(),
-    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(sql`(unixepoch() * 1000)`),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
   },
   (t) => [index('notes_user_id_idx').on(t.userId, t.id)], // serves "this user's notes, by id"
 );

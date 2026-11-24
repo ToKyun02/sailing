@@ -25,9 +25,7 @@ export const createNoteSchema = z.object({ title: z.string().trim().min(1).max(2
 export type CreateNote = z.infer<typeof createNoteSchema>;
 
 // Any subset; a field that's present must be valid, and null is rejected.
-export const updateNoteSchema = z
-  .object({ title: z.string().trim().min(1).max(200), archived: z.boolean() })
-  .partial();
+export const updateNoteSchema = z.object({ title: z.string().trim().min(1).max(200), archived: z.boolean() }).partial();
 export type UpdateNote = z.infer<typeof updateNoteSchema>;
 
 export const listQuerySchema = z.object({

@@ -46,12 +46,7 @@ expect(policy.before({ ...alice, role: 'admin' })).toBe(true);
 // A service with the real policy and module, no HTTP: a denial stays an AuthorizationError here.
 const moduleRef = await Test.createTestingModule({
   imports: [AuthorizationModule.forRoot()],
-  providers: [
-    NotesService,
-    NotePolicy,
-    { provide: QuotaService, useValue: { maxNotesFor: vi.fn().mockResolvedValue(0) } },
-    { provide: AuthenticationContext, useValue: { requireUser: () => alice } },
-  ],
+  providers: [NotesService, NotePolicy, { provide: QuotaService, useValue: { maxNotesFor: vi.fn().mockResolvedValue(0) } }, { provide: AuthenticationContext, useValue: { requireUser: () => alice } }],
 }).compile();
 await expect(moduleRef.get(NotesService).create('x')).rejects.toMatchObject({ reason: 'forbidden', ability: 'createMore' });
 ```
@@ -106,7 +101,11 @@ describe('Notes (e2e)', () => {
   });
 
   it('rejects a note without a title', async () => {
-    await request(app.getHttpServer()).post('/notes').set('authorization', await tokenFor('b@test.io')).send({}).expect(400);
+    await request(app.getHttpServer())
+      .post('/notes')
+      .set('authorization', await tokenFor('b@test.io'))
+      .send({})
+      .expect(400);
   });
 
   it('runs service code as a user, without HTTP', async () => {
